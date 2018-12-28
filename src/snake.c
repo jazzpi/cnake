@@ -103,7 +103,7 @@ void snake_debug(snake_snake* snake) {
     snake_draw_full(snake);
 }
 
-void snake_tick(snake_snake* snake) {
+bool snake_tick(snake_snake* snake) {
     assert(snake->bb.start.x <= snake->head.x &&
            snake->head.x <= snake->bb.end.x);
     assert(snake->bb.start.y <= snake->head.y &&
@@ -113,13 +113,21 @@ void snake_tick(snake_snake* snake) {
     assert(snake->bb.start.y <= snake->tail.y &&
            snake->tail.y <= snake->bb.end.y);
 
-    snake_move(snake);
+    bool ret = snake_move(snake);
+
+    fflush(stdout);
+
+    return ret;
 }
 
-void snake_move(snake_snake* snake) {
+bool snake_move(snake_snake* snake) {
     /* Move head forward */
     snake->head = snake_add(snake->head, snake->dir, 1);
     snake_fill(snake->head);
+    if (snake->head.x < 0 || snake->head.x > SNAKE_COLS ||
+        snake->head.y < 0 || snake->head.y > SNAKE_ROWS) {
+        return false;
+    }
 
     /* Update BB */
     snake->bb.start.x = min(snake->bb.start.x, snake->head.x);
@@ -134,6 +142,8 @@ void snake_move(snake_snake* snake) {
         SNAKE_CELL_TO_DIR(snake->cells[snake->tail.x][snake->tail.y]),
         1
     );
+
+    return true;
 }
 
 snake_coord snake_add(snake_coord start, snake_dir dir, unsigned dist) {

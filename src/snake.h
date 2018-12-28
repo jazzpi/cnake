@@ -1,6 +1,8 @@
 #ifndef __SNAKE_H_
 #define __SNAKE_H_
 
+#include <stdbool.h>
+
 /* Allow for the edge to be printed inside standard XTerm dimensions */
 #define SNAKE_COLS (80 - 2)
 #define SNAKE_ROWS (24 - 2)
@@ -68,13 +70,17 @@ void snake_debug(snake_snake* snake);
 
 /**
  * Perform one game tick and update the screen.
+ *
+ * @return true if the game is still running and false if it's game over.
  */
-void snake_tick(snake_snake* snake);
+bool snake_tick(snake_snake* snake);
 
 /**
  * Move the snake by one cell in its respective direction.
+ *
+ * @return true if the game is still running and false if it's game over.
  */
-void snake_move(snake_snake* snake);
+bool snake_move(snake_snake* snake);
 
 /**
  * Calculate a cell from a start, direction, and distance.

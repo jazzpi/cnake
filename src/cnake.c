@@ -1,12 +1,20 @@
 #include <time.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include "snake.h"
 #include "ansi_esc.h"
 
+static unsigned running = 1;
+
+void handle_sigint(int dummy __attribute__((unused))) {
+    running = 0;
+}
+
 int main() {
     srand(time(NULL));
+    signal(SIGINT, handle_sigint);
 
     snake_snake snake;
 
@@ -14,9 +22,12 @@ int main() {
     snake_debug(&snake);
     snake_reset(&snake);
 
-    sleep(1);
-
-    snake_tick(&snake);
+    while (running) {
+        sleep(1);
+        if (!snake_tick(&snake)) {
+            break;
+        }
+    }
 
     ansi_esc_move_cursor(0, SNAKE_ROWS + 2);
 
