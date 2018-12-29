@@ -12,6 +12,8 @@ void snake_init(snake_snake* snake, bool randomize) {
     assert(SNAKE_ROWS > 2 * SNAKE_INITIAL_OFFSET);
     assert(SNAKE_COLS > 2 * SNAKE_INITIAL_OFFSET);
 
+    snake->length = SNAKE_INITIAL_LENGTH;
+
     unsigned x, y;
     if (randomize) {
         x = ((rand() % (SNAKE_COLS - 2 * SNAKE_INITIAL_OFFSET))
@@ -30,20 +32,20 @@ void snake_init(snake_snake* snake, bool randomize) {
 
     switch (snake->dir) {
     case SNAKE_UP:
-        snake->head.y -= (SNAKE_INITIAL_LENGTH - 1);
+        snake->head.y -= (snake->length - 1);
         break;
     case SNAKE_DOWN:
-        snake->head.y += (SNAKE_INITIAL_LENGTH - 1);
+        snake->head.y += (snake->length - 1);
         break;
     case SNAKE_LEFT:
-        snake->head.x -= (SNAKE_INITIAL_LENGTH - 1);
+        snake->head.x -= (snake->length - 1);
         break;
     case SNAKE_RIGHT:
-        snake->head.x += (SNAKE_INITIAL_LENGTH - 1);
+        snake->head.x += (snake->length - 1);
         break;
     }
 
-    memset(&snake->cells, 0, SNAKE_ROWS * SNAKE_COLS);
+    memset(&snake->cells, 0, sizeof(snake->cells));
     for (x = min(snake->head.x, snake->tail.x);
          x <= max(snake->head.x, snake->tail.x);
          x++) {
@@ -53,6 +55,8 @@ void snake_init(snake_snake* snake, bool randomize) {
             snake->cells[x][y] = SNAKE_DIR_TO_CELL(snake->dir);
         }
     }
+
+    snake_generate_target(snake);
 }
 
 void snake_draw_full(snake_snake* snake) {
@@ -64,7 +68,11 @@ void snake_draw_full(snake_snake* snake) {
     for (y = 0; y < SNAKE_ROWS; y++) {
         printf("|");
         for (x = 0; x < SNAKE_COLS; x++) {
-            printf("%c", snake->cells[x][y] ? '0' + (y % 10) : ' ');
+            if (x == snake->target.x && y == snake->target.y) {
+                printf("%c", TARGET_CHAR);
+            } else {
+                printf("%c", snake->cells[x][y] ? SNAKE_CHAR : ' ');
+            }
         }
         printf("|\n");
     }
@@ -121,19 +129,31 @@ bool snake_move(snake_snake* snake) {
     if (snake->head.x < 0 || snake->head.x >= SNAKE_COLS ||
         snake->head.y < 0 || snake->head.y >= SNAKE_ROWS ||
         snake->cells[snake->head.x][snake->head.y]) {
+        /* TODO: Game over? */
         return false;
     }
 
     snake_fill(snake, snake->head, SNAKE_DIR_TO_CELL(snake->dir));
 
-    /* Move tail forward */
-    snake_coord old_tail = snake->tail;
-    snake->tail = snake_add(
-        snake->tail,
-        SNAKE_CELL_TO_DIR(snake->cells[snake->tail.x][snake->tail.y]),
-        1
-    );
-    snake_clear(snake, old_tail);
+    if (snake->head.x == snake->target.x && snake->head.y == snake->target.y) {
+        snake->length++;
+        if (snake->length == SNAKE_COLS * SNAKE_ROWS) {
+            /* TODO: Game won? */
+            return false;
+        }
+        snake_generate_target(snake);
+        snake_goto(snake->target);
+        printf("%c", TARGET_CHAR);
+    } else {
+        /* Move tail forward */
+        snake_coord old_tail = snake->tail;
+        snake->tail = snake_add(
+            snake->tail,
+            SNAKE_CELL_TO_DIR(snake->cells[snake->tail.x][snake->tail.y]),
+            1
+        );
+        snake_clear(snake, old_tail);
+    }
 
     return true;
 }
@@ -165,7 +185,7 @@ void snake_goto(snake_coord coord) {
 void snake_fill(snake_snake* snake, snake_coord coord, snake_cell type) {
     snake->cells[coord.x][coord.y] = type;
     snake_goto(coord);
-    printf("X");
+    printf("%c", SNAKE_CHAR);
 }
 
 void snake_clear(snake_snake* snake, snake_coord coord) {
@@ -182,4 +202,26 @@ bool snake_set_dir(snake_snake* snake, snake_dir dir) {
         return true;
     }
     return false;
+}
+
+void snake_generate_target(snake_snake* snake) {
+    unsigned possible = SNAKE_ROWS * SNAKE_COLS - snake->length;
+    assert(possible > 0);
+
+    /* Put the target in an empty spot */
+    unsigned index = rand() % possible;
+    unsigned i = 0;
+    unsigned x, y;
+    for (y = 0; y < SNAKE_ROWS; y++) {
+        for (x = 0; x < SNAKE_COLS; x++) {
+            if (!snake->cells[x][y]) {
+                if (i == index) {
+                    snake->target.x = x;
+                    snake->target.y = y;
+                    return;
+                }
+                i++;
+            }
+        }
+    }
 }

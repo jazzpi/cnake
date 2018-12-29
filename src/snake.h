@@ -7,6 +7,9 @@
 #define SNAKE_COLS (80 - 2)
 #define SNAKE_ROWS (24 - 2)
 
+#define SNAKE_CHAR '#'
+#define TARGET_CHAR 'X'
+
 /* Initial minimum distance from the edge */
 #define SNAKE_INITIAL_OFFSET 5
 #define SNAKE_INITIAL_LENGTH 6
@@ -36,8 +39,10 @@ typedef enum {
 #define SNAKE_DIR_TO_CELL(dir) ((snake_cell) (((unsigned) dir) + 1))
 
 typedef struct {
+    unsigned length;
     snake_coord head;
     snake_coord tail;
+    snake_coord target;
     snake_dir dir;
     unsigned char cells[SNAKE_COLS][SNAKE_ROWS];
 } snake_snake;
@@ -103,5 +108,10 @@ void snake_clear(snake_snake* snake, snake_coord coord);
  * (Attempt to) set the direction of the snake.
  */
 bool snake_set_dir(snake_snake* snake, snake_dir dir);
+
+/**
+ * Generate a target.
+ */
+void snake_generate_target(snake_snake* snake);
 
 #endif // __SNAKE_H_
