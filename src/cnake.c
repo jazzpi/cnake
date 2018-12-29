@@ -112,6 +112,7 @@ int main() {
         snake_set_dir(&snake, read_chars(&snake));
 
         if (!snake_tick(&snake)) {
+            snake_draw_gameover(&snake);
             break;
         }
     }

@@ -68,11 +68,7 @@ void snake_draw_full(snake_snake* snake) {
     for (y = 0; y < SNAKE_ROWS; y++) {
         printf("|");
         for (x = 0; x < SNAKE_COLS; x++) {
-            if (x == snake->target.x && y == snake->target.y) {
-                printf("%c", TARGET_CHAR);
-            } else {
-                printf("%c", snake->cells[x][y] ? SNAKE_CHAR : ' ');
-            }
+            printf("%c", snake->cells[x][y] ? SNAKE_CHAR : ' ');
         }
         printf("|\n");
     }
@@ -85,6 +81,8 @@ void snake_draw_full(snake_snake* snake) {
 void snake_reset(snake_snake* snake) {
     ansi_esc_clear_screen();
     snake_draw_full(snake);
+    snake_draw_target(snake);
+    snake_draw_score(snake);
 }
 
 void snake_debug(snake_snake* snake) {
@@ -129,7 +127,6 @@ bool snake_move(snake_snake* snake) {
     if (snake->head.x < 0 || snake->head.x >= SNAKE_COLS ||
         snake->head.y < 0 || snake->head.y >= SNAKE_ROWS ||
         snake->cells[snake->head.x][snake->head.y]) {
-        /* TODO: Game over? */
         return false;
     }
 
@@ -138,12 +135,11 @@ bool snake_move(snake_snake* snake) {
     if (snake->head.x == snake->target.x && snake->head.y == snake->target.y) {
         snake->length++;
         if (snake->length == SNAKE_COLS * SNAKE_ROWS) {
-            /* TODO: Game won? */
             return false;
         }
         snake_generate_target(snake);
-        snake_goto(snake->target);
-        printf("%c", TARGET_CHAR);
+        snake_draw_target(snake);
+        snake_draw_score(snake);
     } else {
         /* Move tail forward */
         snake_coord old_tail = snake->tail;
@@ -224,4 +220,42 @@ void snake_generate_target(snake_snake* snake) {
             }
         }
     }
+}
+
+void snake_draw_target(snake_snake* snake) {
+    snake_goto(snake->target);
+    printf("%c", TARGET_CHAR);
+}
+
+void snake_draw_score(snake_snake* snake) {
+    unsigned x = (SNAKE_COLS - SNAKE_SCORE_WIDTH) / 2 + 1;
+    ansi_esc_move_cursor(x, 0);
+    printf(SNAKE_SCORE_FMT, snake->length - SNAKE_INITIAL_LENGTH);
+}
+
+const char* const SNAKE_GAME_OVER_HEADER_LINES[] = {
+    "=====================\n",
+    "| G A M E   O V E R |\n",
+    "|                   |\n",
+    NULL
+};
+#define SNAKE_GAME_OVER_SCORE_LINE "| Final Score: %04u |\n"
+#define SNAKE_GAME_OVER_FOOTER_LINE "=====================\n"
+
+void snake_draw_gameover(snake_snake* snake) {
+    unsigned x = (SNAKE_COLS - SNAKE_GAME_OVER_WIDTH) / 2 + 1;
+    unsigned y = (SNAKE_ROWS - SNAKE_GAME_OVER_HEIGHT) / 2 + 1;
+
+    unsigned i;
+    const char* line;
+    for (i = 0; (line = SNAKE_GAME_OVER_HEADER_LINES[i]) != NULL; i++) {
+        ansi_esc_move_cursor(x, y);
+        printf("%s", line);
+        y++;
+    }
+    ansi_esc_move_cursor(x, y);
+    printf(SNAKE_GAME_OVER_SCORE_LINE, snake->length - SNAKE_INITIAL_LENGTH);
+    y++;
+    ansi_esc_move_cursor(x, y);
+    printf(SNAKE_GAME_OVER_FOOTER_LINE);
 }

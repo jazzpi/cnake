@@ -9,6 +9,10 @@
 
 #define SNAKE_CHAR '#'
 #define TARGET_CHAR 'X'
+#define SNAKE_SCORE_FMT "Score: %04u"
+#define SNAKE_SCORE_WIDTH 11
+#define SNAKE_GAME_OVER_WIDTH 22
+#define SNAKE_GAME_OVER_HEIGHT 5
 
 /* Initial minimum distance from the edge */
 #define SNAKE_INITIAL_OFFSET 5
@@ -113,5 +117,20 @@ bool snake_set_dir(snake_snake* snake, snake_dir dir);
  * Generate a target.
  */
 void snake_generate_target(snake_snake* snake);
+
+/**
+ * Draw the target to the screen.
+ */
+void snake_draw_target(snake_snake* snake);
+
+/**
+ * Draw the score to the screen.
+ */
+void snake_draw_score(snake_snake* snake);
+
+/**
+ * Draw the game over message to the screen.
+ */
+void snake_draw_gameover(snake_snake* snake);
 
 #endif // __SNAKE_H_
