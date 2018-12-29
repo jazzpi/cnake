@@ -16,25 +16,20 @@ typedef struct {
     unsigned y;
 } snake_coord;
 
-typedef struct {
-    snake_coord start;
-    snake_coord end;
-} snake_bb;
-
 typedef enum {
-    SNAKE_UP,
-    SNAKE_DOWN,
-    SNAKE_LEFT,
-    SNAKE_RIGHT
+    SNAKE_UP = 0,
+    SNAKE_DOWN = 2,
+    SNAKE_LEFT = 1,
+    SNAKE_RIGHT = 3
 } snake_dir;
 
 /* Save the direction the snake went in each cell. */
 typedef enum {
     SNAKE_EMPTY = 0,
-    SNAKE_CUP,
-    SNAKE_CDOWN,
-    SNAKE_CLEFT,
-    SNAKE_CRIGHT
+    SNAKE_CUP = 1,
+    SNAKE_CDOWN = 3,
+    SNAKE_CLEFT = 2,
+    SNAKE_CRIGHT = 4
 } snake_cell;
 
 #define SNAKE_CELL_TO_DIR(cell) ((snake_dir) (((unsigned) cell) - 1))
@@ -44,7 +39,6 @@ typedef struct {
     snake_coord head;
     snake_coord tail;
     snake_dir dir;
-    snake_bb bb;
     unsigned char cells[SNAKE_COLS][SNAKE_ROWS];
 } snake_snake;
 
@@ -101,5 +95,10 @@ void snake_fill(snake_snake* snake, snake_coord coord, snake_cell type);
  * Clear a cell on screen and in the cells storage.
  */
 void snake_clear(snake_snake* snake, snake_coord coord);
+
+/**
+ * (Attempt to) set the direction of the snake.
+ */
+bool snake_set_dir(snake_snake* snake, snake_dir dir);
 
 #endif // __SNAKE_H_

@@ -22,30 +22,28 @@ void snake_init(snake_snake* snake) {
 
     snake->dir = rand() % 4;
 
-    snake->bb.start.x = snake->bb.end.x = x;
-    snake->bb.start.y = snake->bb.end.y = y;
     switch (snake->dir) {
     case SNAKE_UP:
         snake->head.y -= (SNAKE_INITIAL_LENGTH - 1);
-        snake->bb.start.y -= (SNAKE_INITIAL_LENGTH - 1);
         break;
     case SNAKE_DOWN:
         snake->head.y += (SNAKE_INITIAL_LENGTH - 1);
-        snake->bb.end.y += (SNAKE_INITIAL_LENGTH - 1);
         break;
     case SNAKE_LEFT:
         snake->head.x -= (SNAKE_INITIAL_LENGTH - 1);
-        snake->bb.start.x -= (SNAKE_INITIAL_LENGTH - 1);
         break;
     case SNAKE_RIGHT:
         snake->head.x += (SNAKE_INITIAL_LENGTH - 1);
-        snake->bb.end.x += (SNAKE_INITIAL_LENGTH - 1);
         break;
     }
 
     memset(&snake->cells, 0, SNAKE_ROWS * SNAKE_COLS);
-    for (x = snake->bb.start.x; x <= snake->bb.end.x; x++) {
-        for (y = snake->bb.start.y; y <= snake->bb.end.y; y++) {
+    for (x = min(snake->head.x, snake->tail.x);
+         x <= max(snake->head.x, snake->tail.x);
+         x++) {
+        for (y = min(snake->head.y, snake->tail.y);
+             y <= max(snake->head.y, snake->tail.y);
+             y++) {
             snake->cells[x][y] = SNAKE_DIR_TO_CELL(snake->dir);
         }
     }
@@ -94,25 +92,14 @@ void snake_debug(snake_snake* snake) {
 
     printf(
         "Snake with head at (%02u|%02u), tail at (%02u|%02u), facing %s\n"
-        "==============================================================\n"
-        "BB: (%02u|%02u) to (%02u|%02u)\n",
-        snake->head.x, snake->head.y, snake->tail.x, snake->tail.y, dir,
-        snake->bb.start.x, snake->bb.start.y, snake->bb.end.x, snake->bb.end.y
+        "==============================================================\n",
+        snake->head.x, snake->head.y, snake->tail.x, snake->tail.y, dir
     );
 
     snake_draw_full(snake);
 }
 
 bool snake_tick(snake_snake* snake) {
-    assert(snake->bb.start.x <= snake->head.x &&
-           snake->head.x <= snake->bb.end.x);
-    assert(snake->bb.start.y <= snake->head.y &&
-           snake->head.y <= snake->bb.end.y);
-    assert(snake->bb.start.x <= snake->tail.x &&
-           snake->tail.x <= snake->bb.end.x);
-    assert(snake->bb.start.y <= snake->tail.y &&
-           snake->tail.y <= snake->bb.end.y);
-
     bool ret = snake_move(snake);
 
     fflush(stdout);
@@ -123,18 +110,14 @@ bool snake_tick(snake_snake* snake) {
 bool snake_move(snake_snake* snake) {
     /* Move head forward */
     snake->head = snake_add(snake->head, snake->dir, 1);
+    /* TODO: coords are unsigned, this can't be < 0 (but it overflows, so it
+       works?) */
     if (snake->head.x < 0 || snake->head.x > SNAKE_COLS ||
         snake->head.y < 0 || snake->head.y > SNAKE_ROWS) {
         return false;
     }
 
     snake_fill(snake, snake->head, SNAKE_DIR_TO_CELL(snake->dir));
-
-    /* Update BB */
-    snake->bb.start.x = min(snake->bb.start.x, snake->head.x);
-    snake->bb.end.x = max(snake->bb.end.x, snake->head.x);
-    snake->bb.start.y = min(snake->bb.start.y, snake->head.y);
-    snake->bb.end.y = max(snake->bb.end.y, snake->head.y);
 
     /* Move tail forward */
     snake_coord old_tail = snake->tail;
@@ -182,4 +165,14 @@ void snake_clear(snake_snake* snake, snake_coord coord) {
     snake->cells[coord.x][coord.y] = SNAKE_EMPTY;
     snake_goto(coord);
     printf(" ");
+}
+
+bool snake_set_dir(snake_snake* snake, snake_dir dir) {
+    int diff = (((int) snake->dir) - ((int) dir) + 4) % 4;
+    if (diff == 1 || diff == 3) {
+        snake->dir = dir;
+        snake->cells[snake->head.x][snake->head.y] = SNAKE_DIR_TO_CELL(dir);
+        return true;
+    }
+    return false;
 }
