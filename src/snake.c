@@ -123,11 +123,12 @@ bool snake_tick(snake_snake* snake) {
 bool snake_move(snake_snake* snake) {
     /* Move head forward */
     snake->head = snake_add(snake->head, snake->dir, 1);
-    snake_fill(snake->head);
     if (snake->head.x < 0 || snake->head.x > SNAKE_COLS ||
         snake->head.y < 0 || snake->head.y > SNAKE_ROWS) {
         return false;
     }
+
+    snake_fill(snake, snake->head, SNAKE_DIR_TO_CELL(snake->dir));
 
     /* Update BB */
     snake->bb.start.x = min(snake->bb.start.x, snake->head.x);
@@ -136,12 +137,13 @@ bool snake_move(snake_snake* snake) {
     snake->bb.end.y = max(snake->bb.end.y, snake->head.y);
 
     /* Move tail forward */
-    snake_clear(snake->tail);
+    snake_coord old_tail = snake->tail;
     snake->tail = snake_add(
         snake->tail,
         SNAKE_CELL_TO_DIR(snake->cells[snake->tail.x][snake->tail.y]),
         1
     );
+    snake_clear(snake, old_tail);
 
     return true;
 }
@@ -170,12 +172,14 @@ void snake_goto(snake_coord coord) {
     ansi_esc_move_cursor(coord.x + 1, coord.y + 1);
 }
 
-void snake_fill(snake_coord coord) {
+void snake_fill(snake_snake* snake, snake_coord coord, snake_cell type) {
+    snake->cells[coord.x][coord.y] = type;
     snake_goto(coord);
     printf("X");
 }
 
-void snake_clear(snake_coord coord) {
+void snake_clear(snake_snake* snake, snake_coord coord) {
+    snake->cells[coord.x][coord.y] = SNAKE_EMPTY;
     snake_goto(coord);
     printf(" ");
 }

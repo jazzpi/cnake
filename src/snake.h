@@ -93,13 +93,13 @@ snake_coord snake_add(snake_coord start, snake_dir dir, unsigned dist);
 void snake_goto(snake_coord coord);
 
 /**
- * Fill a cell on screen.
+ * Fill a cell on screen and in the cells storage.
  */
-void snake_fill(snake_coord coord);
+void snake_fill(snake_snake* snake, snake_coord coord, snake_cell type);
 
 /**
- * Clear a cell on screen.
+ * Clear a cell on screen and in the cells storage.
  */
-void snake_clear(snake_coord coord);
+void snake_clear(snake_snake* snake, snake_coord coord);
 
 #endif // __SNAKE_H_
