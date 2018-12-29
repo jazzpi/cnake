@@ -9,7 +9,7 @@
 
 /* Initial minimum distance from the edge */
 #define SNAKE_INITIAL_OFFSET 5
-#define SNAKE_INITIAL_LENGTH 3
+#define SNAKE_INITIAL_LENGTH 6
 
 typedef struct {
     unsigned x;
@@ -43,9 +43,12 @@ typedef struct {
 } snake_snake;
 
 /**
- * Initialize the snake at a random position.
+ * Initialize the snake.
+ *
+ * @param snake The snake to initialize
+ * @param randomize Whether to randomize the starting position
  */
-void snake_init(snake_snake* snake);
+void snake_init(snake_snake* snake, bool randomize);
 
 /**
  * Draw the entire screen.

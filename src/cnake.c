@@ -9,6 +9,8 @@
 #include "snake.h"
 #include "ansi_esc.h"
 
+#define RANDOMIZE_START false
+
 /* https://stackoverflow.com/a/37872060/2192641 */
 void stdin_set(bool enable_nonblocking) {
     struct termios t;
@@ -102,12 +104,12 @@ int main() {
 
     snake_snake snake;
 
-    snake_init(&snake);
+    snake_init(&snake, RANDOMIZE_START);
     snake_debug(&snake);
     snake_reset(&snake);
 
     while (running) {
-        sleep(1);
+        usleep(100000);
 
         snake_set_dir(&snake, read_chars(&snake));
 

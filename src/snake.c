@@ -8,19 +8,25 @@
 #include "ansi_esc.h"
 #include "util.h"
 
-void snake_init(snake_snake* snake) {
+void snake_init(snake_snake* snake, bool randomize) {
     assert(SNAKE_ROWS > 2 * SNAKE_INITIAL_OFFSET);
     assert(SNAKE_COLS > 2 * SNAKE_INITIAL_OFFSET);
 
-    unsigned x = ((rand() % (SNAKE_ROWS - 2 * SNAKE_INITIAL_OFFSET))
-                  + SNAKE_INITIAL_OFFSET);
-    unsigned y = ((rand() % (SNAKE_ROWS - 2 * SNAKE_INITIAL_OFFSET))
-                  + SNAKE_INITIAL_OFFSET);
+    unsigned x, y;
+    if (randomize) {
+        x = ((rand() % (SNAKE_COLS - 2 * SNAKE_INITIAL_OFFSET))
+             + SNAKE_INITIAL_OFFSET);
+        y = ((rand() % (SNAKE_ROWS - 2 * SNAKE_INITIAL_OFFSET))
+             + SNAKE_INITIAL_OFFSET);
+    } else {
+        x = SNAKE_COLS / 2;
+        y = SNAKE_ROWS / 2;
+    }
     snake->head.x = x;
     snake->head.y = y;
     snake->tail = snake->head;
 
-    snake->dir = rand() % 4;
+    snake->dir = randomize ? rand() % 4 : SNAKE_RIGHT;
 
     switch (snake->dir) {
     case SNAKE_UP:
@@ -112,8 +118,9 @@ bool snake_move(snake_snake* snake) {
     snake->head = snake_add(snake->head, snake->dir, 1);
     /* TODO: coords are unsigned, this can't be < 0 (but it overflows, so it
        works?) */
-    if (snake->head.x < 0 || snake->head.x > SNAKE_COLS ||
-        snake->head.y < 0 || snake->head.y > SNAKE_ROWS) {
+    if (snake->head.x < 0 || snake->head.x >= SNAKE_COLS ||
+        snake->head.y < 0 || snake->head.y >= SNAKE_ROWS ||
+        snake->cells[snake->head.x][snake->head.y]) {
         return false;
     }
 
