@@ -56,7 +56,6 @@ snake_dir read_chars(snake_snake* snake) {
     static char buf[3];
     static unsigned index = 0;
 
-    snake_dir dir = snake->dir;
     int r;
     while ((r = kbhit())) {
         assert(r > 0);
@@ -77,24 +76,24 @@ snake_dir read_chars(snake_snake* snake) {
         case 2:
             switch (buf[index]) {
             case 'A':
-                dir = SNAKE_UP;
-                break;
+                index = 0;
+                return SNAKE_UP;
             case 'B':
-                dir = SNAKE_DOWN;
-                break;
+                index = 0;
+                return SNAKE_DOWN;
             case 'C':
-                dir = SNAKE_RIGHT;
-                break;
+                index = 0;
+                return SNAKE_RIGHT;
             case 'D':
-                dir = SNAKE_LEFT;
-                break;
+                index = 0;
+                return SNAKE_LEFT;
             }
             index = 0;
             break;
         }
     }
 
-    return dir;
+    return snake->dir;
 }
 
 int main() {
@@ -105,7 +104,6 @@ int main() {
     snake_snake snake;
 
     snake_init(&snake, RANDOMIZE_START);
-    snake_debug(&snake);
     snake_reset(&snake);
 
     while (running) {
@@ -119,6 +117,5 @@ int main() {
     }
 
     ansi_esc_move_cursor(0, SNAKE_ROWS + 2);
-
-    snake_debug(&snake);
+    stdin_set(false);
 }
